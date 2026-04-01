@@ -1,5 +1,6 @@
 import hashlib
 import logging
+import textwrap
 from typing import List, Dict, Optional
 
 logger = logging.getLogger(__name__)
@@ -92,24 +93,30 @@ def format_exam_message(exams: List[Dict[str, str]], academic_year: str, semeste
     ]
 
     lines.append("```")
+    mon_width = 30
     lines.append(
-        f"{'Ngay Thi':10} | {'Gio':5} | {'Mon Thi':18} | {'Phong':8} | {'TL':3} | {'Dia diem':14} |"
+        f"{'Ngay Thi':10} | {'Gio':5} | {'Mon Thi':{mon_width}} | {'Phong':8} | {'TL':3} | {'Dia diem':14} |"
     )
-    lines.append("-" * 80)
+    lines.append("-" * (56 + mon_width))
 
     for exam in exams:
         ngay = pick(exam, ["Ngày Thi", "Ngày thi", "NgayThi", "Ngay thi"])
         gio = pick(exam, ["Giờ Thi", "Giờ thi", "GioThi", "Gio thi"])
-        mon = pick(exam, ["Môn Thi", "Môn thi", "MonThi", "Mon thi", "Tên học phần", "Ten hoc phan"])[:20]
+        mon = pick(exam, ["Môn Thi", "Môn thi", "MonThi", "Mon thi", "Tên học phần", "Ten hoc phan"])
         phong = pick(exam, ["Phòng Thi", "Phòng thi", "PhongThi", "Phong thi"])
         thoiluong = pick(exam, ["Thời lượng (phút)", "Thoi luong (phut)", "Thời lượng", "Thoi luong"])
         diadiem = pick(exam, ["Địa điểm", "Dia diem"])
         hinhthuc = pick(exam, ["Hình Thức", "Hình thức", "HinhThuc"])
         ghichu = pick(exam, ["Ghi Chú", "Ghi chú", "GhiChu"])
 
+        mon_lines = textwrap.wrap(mon, width=mon_width) or [""]
         lines.append(
-            f"{ngay[:10]:10} | {gio[:5]:5} | {mon[:18]:18} | {phong[:8]:8} | {thoiluong[:3]:3} | {diadiem[:14]:14} |"
+            f"{ngay[:10]:10} | {gio[:5]:5} | {mon_lines[0]:{mon_width}} | {phong[:8]:8} | {thoiluong[:3]:3} | {diadiem[:14]:14} |"
         )
+        for extra in mon_lines[1:]:
+            lines.append(
+                f"{'':10} | {'':5} | {extra:{mon_width}} | {'':8} | {'':3} | {'':14} |"
+            )
         if hinhthuc or ghichu:
             lines.append(f"  HT: {hinhthuc} | GC: {ghichu}")
 
