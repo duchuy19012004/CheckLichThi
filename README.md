@@ -142,10 +142,6 @@ Bot khởi động
 - **Giới hạn request:** Không nên đặt `check_interval_minutes` quá nhỏ (khuyến nghị ≥ 10 phút) để tránh bị portal chặn IP.
 - **File `state.json`:** Lưu hash lịch thi hiện tại. Xóa file này để buộc bot gửi thông báo ngay lần kiểm tra tiếp theo (dù lịch thi chưa đổi).
 
-## Ngoài lề
-
-- Cảm ơn Cursor,Codex,Antigravity
-
 ## Ảnh chụp lịch thi từ Portal
 
 ![alt text](image-1.png)
@@ -153,3 +149,7 @@ Bot khởi động
 ## Ảnh chụp lịch thi từ Telegram
 
 ![alt text](image.png)
+
+## Ngoài lề
+
+- Cảm ơn Cursor,Codex,Antigravity
