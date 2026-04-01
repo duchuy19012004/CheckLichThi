@@ -144,5 +144,8 @@ Bot khởi động
 
 ## Ngoài lề
 
-- Dự án vibe coding hết 15 phút
 - Cảm ơn Cursor,Codex,Antigravity
+
+## Ảnh chụp từ Telegram
+
+![alt text](image.png)

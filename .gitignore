@@ -17,3 +17,6 @@ debug_output.html
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# MOJIBAKE_RULES
+MOJIBAKE_RULES.md
