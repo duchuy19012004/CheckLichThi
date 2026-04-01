@@ -146,6 +146,10 @@ Bot khởi động
 
 - Cảm ơn Cursor,Codex,Antigravity
 
-## Ảnh chụp từ Telegram
+## Ảnh chụp lịch thi từ Portal
+
+![alt text](image-1.png)
+
+## Ảnh chụp lịch thi từ Telegram
 
 ![alt text](image.png)
