@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Secrets / local config
+config.json
+state.json
+
+# Runtime logs
+*.log
+
+# Local debug artifacts
+debug_output.html
+.playwright-mcp/
+
+# OS / editor
+.DS_Store
+Thumbs.db
