@@ -3,3 +3,5 @@ beautifulsoup4
 python-telegram-bot>=20.0
 APScheduler
 lxml
+browser-cookie3
+playwright
