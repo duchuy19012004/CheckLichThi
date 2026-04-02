@@ -2,7 +2,7 @@
 
 Bot tự động kiểm tra lịch thi trên [portal HUFLIT](https://portal.huflit.edu.vn) và gửi thông báo qua Telegram khi có thay đổi.
 
----
+Do HK2 Năm học 2025-2026 Lịch thi gần cuối tuần 12 mới có với lại nằm lướt Tiktok quá chán,nên tôi quyết định làm tool này để auto gửi lịch thi về telegram thay vì phải lên portal check
 
 ## Cài đặt
 
