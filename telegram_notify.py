@@ -100,3 +100,27 @@ def check_and_notify(exams: List[Dict[str, str]], config: dict):
         state["exam_hash"] = new_hash
         save_state(state)
         logger.info("Cap nhat state.json voi hash moi")
+
+
+def send_auth_required_alert(config: dict, reason: str = "") -> bool:
+    token = config.get("telegram_bot_token", "")
+    chat_id = config.get("telegram_chat_id", "")
+    if not token or not chat_id:
+        logger.error("Khong the gui canh bao auth: thieu telegram_bot_token/chat_id")
+        return False
+
+    lines = [
+        "CANH BAO: Bot khong tim thay session dang nhap portal hop le.",
+        "Vui long chay `python bot.py login` hoac dang nhap portal tren Brave/Chrome/Edge.",
+    ]
+    if reason:
+        lines.append(f"Chi tiet: {reason}")
+    message = "\n".join(lines)
+    return send_telegram_message(token, chat_id, message)
+
+
+def send_session_expired_alert(config: dict, reason: str = "") -> bool:
+    """
+    Backward-compat alias.
+    """
+    return send_auth_required_alert(config, reason)
