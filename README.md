@@ -1,146 +1,116 @@
-# 🔔 Bot Thông Báo Lịch Thi HUFLIT
+# Bot thông báo lịch thi HUFLIT
 
-Bot tự động kiểm tra lịch thi trên [portal.huflit.edu.vn](https://portal.huflit.edu.vn/Home/Exam) và gửi thông báo qua Telegram khi có lịch thi mới hoặc thay đổi.
-
----
-
-## 📁 Cấu Trúc Dự Án
-
-```
-lichthi/
-├── bot.py              # Điểm khởi chạy chính, lên lịch kiểm tra định kỳ
-├── fetcher.py          # Lấy HTML lịch thi từ portal HUFLIT
-├── parser.py           # Phân tích HTML, trích xuất và băm dữ liệu lịch thi
-├── telegram_notify.py  # So sánh thay đổi và gửi thông báo Telegram
-├── config.json         # File cấu hình (cookie, token Telegram, v.v.)
-├── requirements.txt    # Các thư viện Python cần thiết
-└── state.json          # Lưu trạng thái hash lịch thi (tự động tạo)
-```
+Bot tự động kiểm tra lịch thi trên [portal HUFLIT](https://portal.huflit.edu.vn) và gửi thông báo qua Telegram khi có thay đổi.
 
 ---
 
-## ⚙️ Cài Đặt
+## Cài đặt
 
-### 1. Yêu Cầu Python
-
-Cần Python **3.10 trở lên**.
+Yêu cầu **Python 3.10+**.
 
 ```bash
 pip install -r requirements.txt
+playwright install chromium
 ```
 
 ---
 
-### 2. Lấy Cookie Từ Portal HUFLIT
+## Cấu hình
 
-Bot cần cookie phiên đăng nhập để truy cập dữ liệu lịch thi của bạn.
-
-1. Đăng nhập vào [portal.huflit.edu.vn](https://portal.huflit.edu.vn/Home/Exam) trên trình duyệt (Chrome / Firefox)
-2. Nhấn `F12` → chuyển sang tab **Network** (Mạng)
-3. Tải lại trang bằng `F5`
-4. Click vào request đầu tiên (thường là `Exam` hoặc URL portal)
-5. Trong phần **Request Headers**, sao chép giá trị của trường `Cookie`
-6. Dán vào `config.json`, thay thế `YOUR_COOKIE_HERE`
-
-> ⚠️ **Lưu ý:** Cookie thường hết hạn sau **1–2 ngày**. Nếu bot không hoạt động, hãy cập nhật cookie mới.
-
----
-
-### 3. Tạo Bot Telegram
-
-1. Mở Telegram, tìm kiếm **@BotFather**
-2. Gửi lệnh `/newbot`
-3. Đặt tên cho bot (ví dụ: `LichThiBot`)
-4. Sao chép **Bot Token** (dạng: `123456:ABC-...`) vào `config.json`
-5. Tìm bot của bạn trên Telegram và gửi bất kỳ tin nhắn nào (ví dụ: `/start`)
-6. Lấy **Chat ID** bằng một trong hai cách:
-   - Truy cập: `https://api.telegram.org/bot<TOKEN>/getUpdates`
-   - Hoặc nhắn tin cho bot **@userinfobot**
-7. Điền **Chat ID** vào `config.json`
-
----
-
-### 4. Chỉnh Sửa `config.json`
+Tạo `config.json` dựa trên `config.example.json`:
 
 ```json
 {
-  "cookie": "ASP.NET_SessionId=xxx; PortalAuth=yyy; ...",
   "telegram_bot_token": "YOUR_TELEGRAM_BOT_TOKEN",
   "telegram_chat_id": "YOUR_CHAT_ID",
+  "session_state_path": ".auth/huflit_state.json",
+  "interactive_login_timeout_seconds": 300,
+  "playwright_user_data_dir": ".auth/bot-chrome-profile",
+  "playwright_profile_directory": "Default",
+  "browser_priority": ["brave", "chrome", "edge"],
+  "auth_alert_cooldown_minutes": 60,
+  "cookie": "",
   "academic_year": "2025-2026",
-  "semester": "HK1",
+  "semester": "HK2",
   "check_interval_minutes": 15,
+  "force_notify_every_check": false,
   "portal_url": "https://portal.huflit.edu.vn/Home/Exam"
 }
 ```
 
-| Trường                   | Mô tả                                                      |
-| ------------------------ | ---------------------------------------------------------- |
-| `cookie`                 | Cookie đăng nhập lấy từ portal HUFLIT                      |
-| `telegram_bot_token`     | Token Telegram Bot lấy từ @BotFather                       |
-| `telegram_chat_id`       | Chat ID của bạn (có thể là số âm, ví dụ: `-1001234567890`) |
-| `academic_year`          | Năm học cần theo dõi (ví dụ: `2025-2026`)                  |
-| `semester`               | Học kỳ: `HK1`, `HK2`, hoặc `HK3`                           |
-| `check_interval_minutes` | Tần suất kiểm tra tính bằng phút (mặc định: `15`)          |
+### Ý nghĩa các trường
+
+| Trường                              | Mô tả                                            |
+| ----------------------------------- | ------------------------------------------------ |
+| `telegram_bot_token`                | Token bot Telegram (lấy từ @BotFather)           |
+| `telegram_chat_id`                  | Chat ID nhận thông báo (lấy từ @userinfobot)     |
+| `session_state_path`                | File lưu session Playwright sau khi đăng nhập    |
+| `interactive_login_timeout_seconds` | Thời gian chờ đăng nhập tương tác (giây)         |
+| `playwright_user_data_dir`          | Thư mục profile Chrome riêng cho bot             |
+| `playwright_profile_directory`      | Tên profile Chrome (`Default`, `Profile 1`, ...) |
+| `browser_priority`                  | Thứ tự ưu tiên đọc cookie từ trình duyệt         |
+| `auth_alert_cooldown_minutes`       | Khoảng nghỉ giữa các cảnh báo auth (phút)        |
+| `cookie`                            | Cookie thủ công (fallback cuối cùng)             |
+| `academic_year`                     | Năm học, ví dụ `2025-2026`                       |
+| `semester`                          | Học kỳ, ví dụ `HK1`, `HK2`                       |
+| `check_interval_minutes`            | Khoảng thời gian giữa mỗi lần kiểm tra (phút)    |
+| `force_notify_every_check`          | Gửi thông báo mỗi lần check dù không đổi         |
+| `portal_url`                        | URL trang lịch thi trên portal                   |
 
 ---
 
-## ▶️ Chạy Bot
+## Lệnh chạy
 
 ```bash
+# Chạy bot (luôn dùng lệnh này)
+python bot.py run
+
+# Tương đương
 python bot.py
+
+# Đăng nhập thủ công để lưu session (một lần)
+python bot.py login
 ```
-
-Bot sẽ kiểm tra lịch thi ngay lập tức khi khởi động, sau đó lặp lại theo chu kỳ đã cấu hình.
-
-Để dừng bot: nhấn `Ctrl+C` trong terminal.
 
 ---
 
-## 🔄 Cách Hoạt Động
+## Luồng hoạt động
 
 ```
 Bot khởi động
-  → Đọc config.json
-  → Gửi GET request kèm cookie → Lấy HTML trang lịch thi
-  → POST form (năm học + học kỳ) → Lấy HTML lịch thi đã lọc
-  → Phân tích HTML → Trích xuất bảng lịch thi
-  → Tính hash SHA-256 của lịch thi
-  → So sánh với hash đã lưu trong state.json
-     → Giống nhau : Không làm gì
-     → Khác nhau  : Gửi thông báo Telegram → Lưu hash mới vào state.json
-  → Lặp lại sau N phút
+    │
+    ├── Có session hợp lệ (.auth/huflit_state.json)
+    │       └── Dùng session → Kiểm tra lịch thi → Gửi Telegram
+    │
+    ├── Không có / hết hạn
+    │       └── Mở cửa sổ Chrome để đăng nhập Microsoft
+    │       └── Bạn đăng nhập + MFA → Bot tự lưu session
+    │       └── Tiếp tục kiểm tra lịch thi
+    │
+    └── Mọi cách đều lỗi
+            └── Gửi cảnh báo qua Telegram (có cooldown)
 ```
 
 ---
 
-## 🗂️ Mô Tả Các Module
+## Lần đầu sử dụng
 
-| File                 | Chức năng                                                          |
-| -------------------- | ------------------------------------------------------------------ |
-| `bot.py`             | Điều phối toàn bộ luồng xử lý; sử dụng APScheduler để chạy định kỳ |
-| `fetcher.py`         | Thực hiện GET và POST đến portal HUFLIT để lấy HTML lịch thi       |
-| `parser.py`          | Dùng BeautifulSoup phân tích HTML, tính hash và định dạng tin nhắn |
-| `telegram_notify.py` | So sánh hash cũ/mới, gửi thông báo và cập nhật `state.json`        |
-
----
-
-## 🛠️ Xử Lý Sự Cố
-
-| Vấn đề                       | Nguyên nhân có thể            | Giải pháp                           |
-| ---------------------------- | ----------------------------- | ----------------------------------- |
-| Không lấy được HTML          | Cookie đã hết hạn             | Lấy cookie mới từ trình duyệt       |
-| Lỗi gửi Telegram             | Token hoặc Chat ID sai        | Kiểm tra lại trong `config.json`    |
-| Không tìm thấy bảng lịch thi | Portal thay đổi cấu trúc HTML | Kiểm tra selector trong `parser.py` |
-| Bot chạy nhưng không gửi tin | Lịch thi chưa thay đổi        | Đây là hành vi bình thường          |
+1. Chạy `python bot.py login`
+2. Cửa sổ Chrome mới hiện ra (profile riêng của bot)
+3. Đăng nhập portal HUFLIT → tick **Remember me**
+4. Đợi bot tự lưu session (thường vài giây sau khi vào trang chính)
+5. Từ lần sau, chạy `python bot.py run` — không cần nhập lại
 
 ---
 
-## 📌 Lưu Ý Quan Trọng
+## Xử lý sự cố
 
-- **Thời hạn cookie:** Cookie HUFLIT thường hết hạn sau **1–2 ngày**, cần cập nhật thủ công.
-- **Giới hạn request:** Không nên đặt `check_interval_minutes` quá nhỏ (khuyến nghị ≥ 10 phút) để tránh bị portal chặn IP.
-- **File `state.json`:** Lưu hash lịch thi hiện tại. Xóa file này để buộc bot gửi thông báo ngay lần kiểm tra tiếp theo (dù lịch thi chưa đổi).
+| Vấn đề                      | Giải pháp                                                                      |
+| --------------------------- | ------------------------------------------------------------------------------ |
+| `about:blank` khi mở Chrome | Đóng Chrome thật đang chạy, hoặc dùng profile riêng `.auth/bot-chrome-profile` |
+| Cookie browser bị khóa      | Đóng Brave/Chrome/Edge hoàn toàn, hoặc chạy terminal bằng **Administrator**    |
+| Session hết hạn             | Chạy lại `python bot.py login` để đăng nhập lại                                |
+| Bot không gửi Telegram      | Kiểm tra `telegram_bot_token` và `telegram_chat_id` trong `config.json`        |
 
 ## Ảnh chụp lịch thi từ Portal
 
