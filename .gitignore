@@ -20,3 +20,9 @@ Thumbs.db
 
 # MOJIBAKE_RULES
 MOJIBAKE_RULES.md
+
+# Microsoft session state
+.auth/
+
+##HowToCommit
+howtocommit.md
